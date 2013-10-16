@@ -435,7 +435,7 @@ public class RTSPClient extends Thread implements IEvent, RTPAppIntf {
 
 	private void refreshFile() throws IOException {
 		long time = System.currentTimeMillis();
-		long index = time / 3600*1000;
+		long index = time / (3600*1000);
 		if (index == temp) {
 			return;
 		} else {
