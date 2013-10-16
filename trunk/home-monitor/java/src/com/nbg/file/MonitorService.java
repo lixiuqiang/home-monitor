@@ -44,7 +44,7 @@ public class MonitorService extends Service implements INotify {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			client = new RTSPClient(url, dir, m, 60, this);
+			client = new RTSPClient(url, dir, m, 180, this);
 
 			Intent i = new Intent(this, MainActivity.class);
 			i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
