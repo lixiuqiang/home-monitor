@@ -45,7 +45,7 @@ public class RTSPClient extends Thread implements IEvent, RTPAppIntf {
 
 	private int client_port;
 
-	private static final int BUFFER_SIZE = 8192;
+	private static final int BUFFER_SIZE = 10240;
 
 	/** */
 	/** 端口选择器 */
@@ -65,7 +65,6 @@ public class RTSPClient extends Thread implements IEvent, RTPAppIntf {
 	private Status sysStatus;
 	private String sessionid;
 	private int seq = 1;
-	private boolean isSended;
 	private String trackInfo;
 	private String config;
 	private String realm;
@@ -89,7 +88,7 @@ public class RTSPClient extends Thread implements IEvent, RTPAppIntf {
 		start_time = System.currentTimeMillis();
 		this.address = address;
 		this.dir = dir;
-		this.timeout = second * 1000L;
+		this.timeout = second;
 		this.max = mb * 1024L * 1024L;
 		this.client_port = new Random().nextInt(10000) + 10000;
 		this.offset = new Random().nextInt(100);
@@ -138,15 +137,13 @@ public class RTSPClient extends Thread implements IEvent, RTPAppIntf {
 				handle(receive);
 			} else {
 				System.out.println("接收到数据为空,重新启动连接");
+				shutdown();
 			}
 		}
 	}
 
 	@Override
 	public void write(SelectionKey key) throws SocketException {
-		if (isSended) {
-			return;
-		}
 		String send = null;
 		switch (sysStatus) {
 		case init:
@@ -158,21 +155,8 @@ public class RTSPClient extends Thread implements IEvent, RTPAppIntf {
 		case describe:
 			send = doSetup();
 			break;
-		case setup:
-			if (sessionid == null && sessionid.length() > 0) {
-				System.out.println("setup还没有正常返回");
-			} else {
-				DatagramSocket rtpSocket = new DatagramSocket(client_port);
-				DatagramSocket rtcpSocket = new DatagramSocket(client_port + 1);
-				rtpSession = new RTPSession(rtpSocket, rtcpSocket);
-				rtpSession.RTPSessionRegister(this, null, null);
-				Participant p = new Participant(remote_ip, 6970, 6971);
-
-				rtpSession.addParticipant(p);
-				send = doPlay();
-			}
-			break;
-		case play:
+		case setup:			
+			send = doPlay();
 			break;
 		default:
 			break;
@@ -189,7 +173,6 @@ public class RTSPClient extends Thread implements IEvent, RTPAppIntf {
 					while (sendBuf.hasRemaining()) {
 						socketChannel.write(sendBuf);
 					}
-					isSended = true;
 				} catch (final IOException e) {
 					e.printStackTrace();
 				}
@@ -198,18 +181,12 @@ public class RTSPClient extends Thread implements IEvent, RTPAppIntf {
 	}
 
 	public void shutdown() {
-		this.interrupt();
 		try {
 			if (rtpSession != null) {
 				rtpSession.endSession();
 				rtpSession = null;
 			}
-			if (isConnected()) {
-				socketChannel.close();
-				selector.close();
-			} else {
-				System.out.println("通道为空或者没有连接");
-			}
+			disConnected();
 			if (fos != null) {
 				try {
 					fos.close();
@@ -228,6 +205,12 @@ public class RTSPClient extends Thread implements IEvent, RTPAppIntf {
 	@Override
 	public void run() {
 		try {
+			DatagramSocket rtpSocket = new DatagramSocket(client_port);
+			rtpSession = new RTPSession(rtpSocket);
+			rtpSession.RTPSessionRegister(this);
+			Participant p = new Participant(remote_ip, 6970);
+			rtpSession.addParticipant(p);
+			
 			selector = Selector.open();
 			socketChannel = SocketChannel.open();
 			// 绑定到本地端口
@@ -242,10 +225,10 @@ public class RTSPClient extends Thread implements IEvent, RTPAppIntf {
 				Thread.sleep(100);
 			}
 			sysStatus = Status.init;
-			isSended = false;
 			System.out.println("启动主流程");
 			while (selector != null && selector.isOpen()) {
-				int n = selector.select(2000);
+				int n = selector.select(60000);
+				System.out.println("n:" + n+" "+System.currentTimeMillis()/1000);
 				if (n > 0) {
 					Set<SelectionKey> keys = selector.selectedKeys();
 					Iterator<SelectionKey> iter = keys.iterator();
@@ -258,42 +241,45 @@ public class RTSPClient extends Thread implements IEvent, RTPAppIntf {
 
 						// 处理事件
 						final IEvent handler = (IEvent) sk.attachment();
-						try {
-							if (sk.isReadable()) {
-								handler.read(sk);
-								socketChannel.register(selector,
-										SelectionKey.OP_WRITE, this);
-							} else if (sk.isWritable()) {
-								handler.write(sk);
-								socketChannel.register(selector,
-										SelectionKey.OP_READ, this);
-							}
-						} catch (final Exception e) {
-							e.printStackTrace();
-							sk.cancel();
+						if (sk.isReadable()) {
+							handler.read(sk);
+							socketChannel.register(selector,
+									SelectionKey.OP_WRITE, this);
+						} else if (sk.isWritable()) {
+							handler.write(sk);
+							socketChannel.register(selector,
+									SelectionKey.OP_READ, this);
 						}
 					}
 				} else {
-					if (checkTimeout()) {
-						break;
-					}
+					sysStatus=Status.setup;
+					socketChannel.register(selector,
+							SelectionKey.OP_WRITE, this);
 				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			shutdown();
+			// shutdown();
 		}
 	}
 
 	public boolean checkTimeout() {
-		long time = System.currentTimeMillis() - start_time;
-		System.out.println("ip:"+remote_ip+" time:" + time + " timeout:" + timeout);
+		long time = (System.currentTimeMillis() - start_time) / 1000;
+		System.out.println("ip:" + remote_ip + " time:" + time + " timeout:"
+				+ timeout);
 		return time > timeout;
 	}
 
-	public boolean isConnected() {
-		return socketChannel != null && socketChannel.isConnected();
+	public void disConnected() throws IOException {
+		if (socketChannel != null && socketChannel.isConnected()) {
+			socketChannel.close();
+			socketChannel = null;
+		}
+		if (selector != null && selector.isOpen()) {
+			selector.close();
+			selector = null;
+		}
 	}
 
 	private void handle(String tmp) {
@@ -311,11 +297,9 @@ public class RTSPClient extends Thread implements IEvent, RTPAppIntf {
 						"\r\n", "");
 				break;
 			case describe:
+				sysStatus = Status.setup;
 				sessionid = tmp.substring(tmp.indexOf("Session: ") + 9)
 						.replaceAll("\r\n", "");
-				if (sessionid != null && sessionid.length() > 0) {
-					sysStatus = Status.setup;
-				}
 				break;
 			case setup:
 				sysStatus = Status.play;
@@ -325,7 +309,6 @@ public class RTSPClient extends Thread implements IEvent, RTPAppIntf {
 			default:
 				break;
 			}
-			isSended = false;
 		} else if (tmp.startsWith(RTSP_AUTH)) {
 			int a = tmp.indexOf("realm=");
 			int b = tmp.indexOf("\"", a + 7);
@@ -333,7 +316,6 @@ public class RTSPClient extends Thread implements IEvent, RTPAppIntf {
 			int c = tmp.indexOf("nonce=");
 			int d = tmp.indexOf("\"", c + 7);
 			nonce = tmp.substring(c + 7, d);
-			isSended = false;
 		} else {
 			System.out.println("返回错误：" + tmp);
 		}
@@ -435,7 +417,7 @@ public class RTSPClient extends Thread implements IEvent, RTPAppIntf {
 
 	private void refreshFile() throws IOException {
 		long time = System.currentTimeMillis();
-		long index = time / (3600*1000);
+		long index = time / (1800 * 1000);
 		if (index == temp) {
 			return;
 		} else {
@@ -455,44 +437,6 @@ public class RTSPClient extends Thread implements IEvent, RTPAppIntf {
 	}
 
 	@Override
-	public void receiveData(DataFrame frame, Participant p) throws Exception {
-		receive = p.getReceivedPktCount();
-		lost = p.getLostPktCount();
-		start_time = System.currentTimeMillis();
-		byte[] data = frame.getConcatenatedData();
-		byte[] temp = Arrays.copyOf(data, 6);
-		String d = new BigInteger(temp).toString(16);
-		if (d.startsWith(config)) {
-			refreshFile();
-			if(notify!=null){
-				notify.notify(getTitle(), getText());
-			}
-			System.out.println(remote_ip + " start record");
-			start = true;
-		} else if (d.startsWith("7c")) {
-			if (start) {
-				if ((data[1] & 0x80) > 0) {
-					fos.write(new byte[] { 0, 0, 0, 1 });
-					fos.write((data[0] & 0xe0) | (data[1] & 0x1f));
-				}
-				fos.write(data, 2, data.length - 2);
-				fos.flush();
-			}
-			return;
-		}
-		if (start) {
-			fos.write(new byte[] { 0, 0, 0, 1 });
-			fos.write(data, 0, data.length);
-			fos.flush();
-		}
-	}
-
-	@Override
-	public void userEvent(int type, Participant[] participant) {
-		System.out.println("nbg:" + type);
-	}
-
-	@Override
 	public int frameSize(int payloadType) {
 		return 1;
 	}
@@ -504,6 +448,16 @@ public class RTSPClient extends Thread implements IEvent, RTPAppIntf {
 
 	public int checkSize(String path, long mb) {
 		return (int) (getFolderSize(new File(path), 0, mb) / 1048576);
+	}
+
+	public String getTitle() {
+		long second = (System.currentTimeMillis() - start_time) / 1000;
+		return "R:" + receive + " L:" + lost + " " + size + "MB " + second
+				+ "S";
+	}
+
+	public String getText() {
+		return dirPath;
 	}
 
 	public static long getFolderSize(File dir, long size, final long max) {
@@ -535,27 +489,73 @@ public class RTSPClient extends Thread implements IEvent, RTPAppIntf {
 		return size;
 	}
 
-	public static void main(String[] args) {
-		try {
-			RTSPClient client1 = new RTSPClient(
-					"rtsp://xiaoni:dugudao3721@192.168.168.7:7001/mpeg4",
-					"./HOME/", 102, 100, null);
-			client1.start();
-			// RTSPClient client2 = new RTSPClient(
-			// "rtsp://xiaoni:dugudao3721@192.168.168.8:8001/mpeg4",
-			// "./HOME/", "102", null);
-			// client2.start();
-		} catch (Exception e) {
-			e.printStackTrace();
+	@Override
+	public void receiveData(DataFrame frame, Participant p) throws Exception {
+		receive = p.getReceivedPktCount();
+		lost = p.getLostPktCount();
+		start_time = System.currentTimeMillis();
+		byte[] data = frame.getConcatenatedData();
+		byte[] temp = Arrays.copyOf(data, 6);
+		String d = new BigInteger(temp).toString(16);
+		if (d.startsWith(config)) {
+			refreshFile();
+			if (notify != null) {
+				notify.notify(getTitle(), getText());
+			}
+			System.out.println(remote_ip + " start record");
+			start = true;
+		} else if (d.startsWith("7c")) {
+			if (start) {
+				if ((data[1] & 0x80) > 0) {
+					fos.write(new byte[] { 0, 0, 0, 1 });
+					fos.write((data[0] & 0xe0) | (data[1] & 0x1f));
+				}
+				fos.write(data, 2, data.length - 2);
+				fos.flush();
+			}
+			return;
+		}
+		if(d.startsWith("61")||d.startsWith("67")||d.startsWith("68")){
+			
+		}else {			
+			System.out.println(d);
+		}
+		if (start) {
+			fos.write(new byte[] { 0, 0, 0, 1 });
+			fos.write(data, 0, data.length);
+			fos.flush();
 		}
 	}
 
-	public String getTitle() {
-		long second=(System.currentTimeMillis()-start_time)/1000;
-		return "R:" + receive + " L:" + lost + " " + size + "MB "+second+"S";
+	@Override
+	public void userEvent(int type, Participant[] participant) {
+		System.out.println("nbg:event" + type);
 	}
 
-	public String getText() {
-		return dirPath;
+	public static void main(String[] args) {
+		try {
+			INotify monitor = new INotify() {
+
+				@Override
+				public void shutdown() {
+				}
+
+				@Override
+				public void notify(String title, String text) {
+					System.out.println("title:" + title);
+					System.out.println("text:" + text);
+				}
+			};
+//			RTSPClient client1 = new RTSPClient(
+//					"rtsp://xiaoni:dugudao3721@192.168.168.7:7001/mpeg4",
+//					"./HOME/", 102, 10, monitor);
+//			client1.start();
+			RTSPClient client2 = new RTSPClient(
+					"rtsp://xiaoni:dugudao3721@192.168.168.8:8001/mpeg4",
+					"./HOME/", 102, 10, null);
+			client2.start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }
