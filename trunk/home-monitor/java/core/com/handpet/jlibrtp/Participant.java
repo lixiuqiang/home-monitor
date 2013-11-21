@@ -29,12 +29,8 @@ public class Participant {
 	protected boolean unexpected = false;
 	/** Where to send RTP packets (unicast)*/
 	protected InetSocketAddress rtpAddress = null; 
-	/** Where to send RTCP packets (unicast) */
-	protected InetSocketAddress rtcpAddress = null;
 	/** Where the first RTP packet was received from */
 	protected InetSocketAddress rtpReceivedFromAddress = null;
-	/** Where the first RTCP packet was received from */
-	protected InetSocketAddress rtcpReceivedFromAddress = null;
 	
 	/** SSRC of participant */
 	protected long ssrc = -1;
@@ -117,7 +113,7 @@ public class Participant {
 	 * @param rtpPort port on which peer expects RTP packets. Use 0 if this is a sender-only, or this is a multicast session.
 	 * @param rtcpPort port on which peer expects RTCP packets. Use 0 if this is a sender-only, or this is a multicast session.
 	 */
-	public Participant(String networkAddress, int rtpPort, int rtcpPort) {
+	public Participant(String networkAddress, int rtpPort) {
 		// RTP
 		if(rtpPort > 0) {
 			try {
@@ -127,24 +123,13 @@ public class Participant {
 			}
 			//isReceiver = true;
 		}
-		
-		// RTCP 
-		if(rtcpPort > 0) {
-			try {
-				rtcpAddress = new InetSocketAddress(networkAddress, rtcpPort);
-			} catch (Exception e) {
-				System.out.println("Couldn't resolve " + networkAddress);
-			}
-		}
-		
 		//By default this is a sender
 		//isSender = true;
 	}
 	
 	// We got a packet, but we don't know this person yet.
-	protected Participant(InetSocketAddress rtpAdr, InetSocketAddress rtcpAdr, long SSRC) {
+	protected Participant(InetSocketAddress rtpAdr, long SSRC) {
 		rtpReceivedFromAddress = rtpAdr;
-		rtcpReceivedFromAddress = rtcpAdr;
 		ssrc = SSRC;
 		unexpected = true;
 	}
@@ -162,16 +147,6 @@ public class Participant {
 	InetSocketAddress getRtpSocketAddress() {
 		return rtpAddress;
 	}
-	
-	
-	/**
-	 * RTCP Address registered with this participant.
-	 * 
-	 * @return address of participant
-	 */
-	InetSocketAddress getRtcpSocketAddress() {
-		return rtcpAddress;
-	}
 
 	/**
 	 * InetSocketAddress this participant has used to
@@ -182,19 +157,6 @@ public class Participant {
 	InetSocketAddress getRtpReceivedFromAddress() {
 		return rtpAddress;
 	}
-
-	
-	
-	/**
-	 * InetSocketAddress this participant has used to
-	 * send us RTCP packets.
-	 * 
-	 * @return address of participant
-	 */
-	InetSocketAddress getRtcpReceivedFromAddress() {
-		return rtcpAddress;
-	}
-	
 	
 	/**
 	 * CNAME registered for this participant.
@@ -204,7 +166,6 @@ public class Participant {
 	public String getCNAME() {
 		return cname;
 	}
-	
 	
 	/**
 	 * NAME registered for this participant.

@@ -92,12 +92,6 @@ public class RTPReceiverThread extends Thread {
 	
 				// Parse the received RTP (?) packet
 				RtpPkt pkt = new RtpPkt(rawPkt, packet.getLength());
-	
-				// Check whether it was valid.
-				if(pkt == null) {
-					System.out.println("Received invalid RTP packet. Ignoring");
-					continue;
-				}
 				
 				long pktSsrc = pkt.getSsrc();
 				
@@ -125,8 +119,7 @@ public class RTPReceiverThread extends Thread {
 				Participant part = rtpSession.partDb.getParticipant(pktSsrc);
 	
 				if(part == null) {
-					InetSocketAddress nullSocket = null;
-					part = new Participant((InetSocketAddress) packet.getSocketAddress(), nullSocket, pkt.getSsrc());
+					part = new Participant((InetSocketAddress) packet.getSocketAddress(), pkt.getSsrc());
 					part.unexpected = true;
 					rtpSession.partDb.addParticipant(1,part);
 				}

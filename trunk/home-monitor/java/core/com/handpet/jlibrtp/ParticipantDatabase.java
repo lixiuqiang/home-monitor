@@ -119,11 +119,9 @@ public class ParticipantDatabase {
 			while(notDone && enu.hasMoreElements()) {
 				Participant part = enu.nextElement();
 				if(part.unexpected && 
-						(part.rtcpReceivedFromAddress.equals(part.rtcpAddress.getAddress()) 
-						|| part.rtpReceivedFromAddress.equals(part.rtpAddress.getAddress()))) {
+						(part.rtpReceivedFromAddress.equals(part.rtpAddress.getAddress()))) {
 					
 					part.rtpAddress = p.rtpAddress;
-					part.rtcpAddress = p.rtcpAddress;
 					part.unexpected = false;
 
 					//Report the match back to the application
@@ -154,11 +152,9 @@ public class ParticipantDatabase {
 				//		+ " " + p.rtcpReceivedFromAddress.getAddress().toString());
 				
 				//System.out.println(" HUUHHHH?  " + p.rtcpReceivedFromAddress.getAddress().equals(part.rtcpAddress.getAddress()));
-				if((cameFrom == 1 && p.rtpReceivedFromAddress.getAddress().equals(part.rtpAddress.getAddress()))
-					|| (cameFrom == 2 && p.rtcpReceivedFromAddress.getAddress().equals(part.rtcpAddress.getAddress()))) {
+				if((cameFrom == 1 && p.rtpReceivedFromAddress.getAddress().equals(part.rtpAddress.getAddress()))) {
 					
 					part.rtpReceivedFromAddress = p.rtpReceivedFromAddress;
-					part.rtcpReceivedFromAddress = p.rtcpReceivedFromAddress;
 					
 					// Move information
 					part.ssrc = p.ssrc;
@@ -244,7 +240,7 @@ public class ParticipantDatabase {
 		while(enu.hasMoreElements()) {
 			p = (Participant) enu.nextElement();
 			System.out.println("           ssrcTable ssrc:"+p.ssrc+" cname:"+p.cname
-					+" loc:"+p.loc+" rtpAddress:"+p.rtpAddress+" rtcpAddress:"+p.rtcpAddress);
+					+" loc:"+p.loc+" rtpAddress:"+p.rtpAddress);
 		}
 		
 		Iterator<Participant> iter = receivers.iterator();
