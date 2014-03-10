@@ -85,7 +85,7 @@ public class MainActivity extends Activity implements OnClickListener {
 			editor_2.putBoolean("check", checkBox2.isChecked());
 			editor_2.putString("mb", mbText2.getText().toString());
 			editor_2.commit();
-			handler(v == start_button2, MonitorService2.class);
+			handler(v == start_button2, getApplicationContext(),MonitorService2.class);
 		} else if (v == start_button1 || v == end_button1) {
 			Editor editor_1 = config_1.edit();
 			editor_1.putString("dir", dirText.getText().toString());
@@ -93,25 +93,24 @@ public class MainActivity extends Activity implements OnClickListener {
 			editor_1.putBoolean("check", checkBox1.isChecked());
 			editor_1.putString("mb", mbText1.getText().toString());
 			editor_1.commit();
-			handler(v == start_button1, MonitorService1.class);
+			handler(v == start_button1, getApplicationContext(),MonitorService1.class);
 		}
 	}
 
-	public void handler(boolean start, Class<?> c) {
-		Context context = getApplicationContext();
+	public static void handler(boolean start,Context context, Class<?> c) {
 		Intent serviceIntent = new Intent(context, c);
 		PendingIntent mAlarmSender = PendingIntent.getService(context, 0,
 				serviceIntent, 0);
 		AlarmManager am = (AlarmManager) context
 				.getSystemService(Activity.ALARM_SERVICE);
 		if (start) {
-			startService(serviceIntent);
+			context.startService(serviceIntent);
 			int round = 20 * 1000;
 			am.cancel(mAlarmSender);
 			am.setRepeating(AlarmManager.RTC, System.currentTimeMillis()
 					+ round, round, mAlarmSender);
 		} else {
-			stopService(serviceIntent);
+			context.stopService(serviceIntent);
 			am.cancel(mAlarmSender);
 		}
 	}
