@@ -417,7 +417,7 @@ public class RTSPClient extends Thread implements IEvent, RTPAppIntf {
 
 	private void refreshFile() throws IOException {
 		long time = System.currentTimeMillis();
-		long index = time / (1800 * 1000);
+		long index = time / (600 * 1000);
 		if (index == temp) {
 			return;
 		} else {
@@ -534,18 +534,18 @@ public class RTSPClient extends Thread implements IEvent, RTPAppIntf {
 
 	public static void main(String[] args) {
 		try {
-			INotify monitor = new INotify() {
-
-				@Override
-				public void shutdown() {
-				}
-
-				@Override
-				public void notify(String title, String text) {
-					System.out.println("title:" + title);
-					System.out.println("text:" + text);
-				}
-			};
+//			INotify monitor = new INotify() {
+//
+//				@Override
+//				public void shutdown() {
+//				}
+//
+//				@Override
+//				public void notify(String title, String text) {
+//					System.out.println("title:" + title);
+//					System.out.println("text:" + text);
+//				}
+//			};
 //			RTSPClient client1 = new RTSPClient(
 //					"rtsp://xiaoni:dugudao3721@192.168.168.7:7001/mpeg4",
 //					"./HOME/", 102, 10, monitor);
