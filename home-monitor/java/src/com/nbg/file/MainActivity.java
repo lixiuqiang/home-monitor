@@ -84,6 +84,7 @@ public class MainActivity extends Activity implements OnClickListener {
 			editor_2.putString("url", urlText2.getText().toString());
 			editor_2.putBoolean("check", checkBox2.isChecked());
 			editor_2.putString("mb", mbText2.getText().toString());
+			editor_2.putBoolean("enable", v==start_button2);
 			editor_2.commit();
 			handler(v == start_button2, getApplicationContext(),MonitorService2.class);
 		} else if (v == start_button1 || v == end_button1) {
@@ -92,6 +93,7 @@ public class MainActivity extends Activity implements OnClickListener {
 			editor_1.putString("url", urlText1.getText().toString());
 			editor_1.putBoolean("check", checkBox1.isChecked());
 			editor_1.putString("mb", mbText1.getText().toString());
+			editor_1.putBoolean("enable", v==start_button1);
 			editor_1.commit();
 			handler(v == start_button1, getApplicationContext(),MonitorService1.class);
 		}
