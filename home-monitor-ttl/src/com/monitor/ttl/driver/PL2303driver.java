@@ -138,26 +138,17 @@ public class PL2303driver implements Runnable {
 	private static final int BREAK_OFF = 0x0000;
 	private static final int GET_LINE_REQUEST_TYPE = 0xa1;
 	private static final int GET_LINE_REQUEST = 0x21;
-	private static final int VENDOR_WRITE_REQUEST_TYPE = 0x40;
-	private static final int VENDOR_WRITE_REQUEST = 0x01;
-	private static final int VENDOR_READ_REQUEST_TYPE = 0xc0;
-	private static final int VENDOR_READ_REQUEST = 0x01;
 	private static final int SET_CONTROL_REQUEST_TYPE = 0x21;
 	private static final int SET_CONTROL_REQUEST = 0x22;
 
 	// RS232 Line constants
 	private static final int FLOWCONTROL_TIMEOUT = 500; // Timeout 500ms for
-														// Flowcontrol
 	private static final int CONTROL_DTR = 0x01;
 	private static final int CONTROL_RTS = 0x02;
 	private static final int UART_DCD = 0x01;
 	private static final int UART_DSR = 0x02;
 	private static final int UART_RING = 0x08;
 	private static final int UART_CTS = 0x80;
-
-	// XON/XOFF FlowControl
-	private static final int XON = 0x11;
-	private static final int XOFF = 0x13;
 
 	// Tag for Log.d function
 	private static final String TAG = "pl2303";
@@ -327,46 +318,6 @@ public class PL2303driver implements Runnable {
 	}
 
 	/**
-	 * Vendor specific USB read request
-	 * 
-	 * @param value
-	 * @param index
-	 * @param buffer
-	 * @param length
-	 * @throws PL2303Exception
-	 */
-	private void mVendorRead(int value, int index, byte[] buffer, int length)
-			throws PL2303Exception {
-		int ret = mConnection.controlTransfer(VENDOR_READ_REQUEST_TYPE,
-				VENDOR_READ_REQUEST, value, index, buffer, length, USB_TIMEOUT);
-		if (ret < length)
-			throw new PL2303Exception("Vendor read request failed! Value: 0x"
-					+ String.format("%04X", value) + " Index: " + index
-					+ "Length: " + length + " Return: " + ret);
-	}
-
-	/**
-	 * Vendor specific USB write request
-	 * 
-	 * @param value
-	 * @param index
-	 * @param buffer
-	 * @param length
-	 * @throws PL2303Exception
-	 */
-	private void mVendorWrite(int value, int index, byte[] buffer, int length)
-			throws PL2303Exception {
-		int ret = mConnection
-				.controlTransfer(VENDOR_WRITE_REQUEST_TYPE,
-						VENDOR_WRITE_REQUEST, value, index, buffer, length,
-						USB_TIMEOUT);
-		if (ret < length)
-			throw new PL2303Exception("Vendor write request failed! Value: 0x"
-					+ String.format("%04X", value) + " Index: " + index
-					+ "Length: " + length + " Return: " + ret);
-	}
-
-	/**
 	 * initialize the PL2303 converter
 	 * 
 	 * @return true on success
@@ -425,32 +376,6 @@ public class PL2303driver implements Runnable {
 		if (mConnection.getRawDescriptors()[7] == 64)
 			mPL2303type = 1; // Type 1 = PL2303HX
 		Log.d(TAG, "PL2303 type " + mPL2303type + " detected");
-
-		// Initialization of PL2303 according to linux pl2303.c driver
-		byte[] buffer = new byte[1];
-
-		try {
-			mVendorRead(0x8484, 0, buffer, 1);
-			mVendorWrite(0x0404, 0, null, 0);
-			mVendorRead(0x8484, 0, buffer, 1);
-			mVendorRead(0x8383, 0, buffer, 1);
-			mVendorRead(0x8484, 0, buffer, 1);
-			mVendorWrite(0x0404, 1, null, 0);
-			mVendorRead(0x8484, 0, buffer, 1);
-			mVendorRead(0x8383, 0, buffer, 1);
-			mVendorWrite(0, 1, null, 0);
-			mVendorWrite(1, 0, null, 0);
-
-			if (mPL2303type == 1)
-				mVendorWrite(2, 0x44, null, 0);
-			else
-				mVendorWrite(2, 0x24, null, 0);
-
-		} catch (PL2303Exception e) {
-			Log.e(TAG, "Failed to initialize PL2303: ", e);
-			e.printStackTrace();
-			return false;
-		}
 
 		// Start control thread for status lines DSR,CTS,DCD and RI
 		mStopMonitoringThread = false;
@@ -779,34 +704,6 @@ public class PL2303driver implements Runnable {
 				BREAK_OFF, 0, null, 0, USB_TIMEOUT);
 		if (ret < 0)
 			throw new PL2303Exception("Could not disable BreakControl");
-
-		// Enable/Disable FlowControl
-		switch (F) {
-		case OFF:
-			mVendorWrite(0x0, 0x0, null, 0);
-			setRTS(false);
-			setDTR(false);
-			mFlow = F;
-			Log.d(TAG, "FlowControl disabled");
-			break;
-
-		case RTSCTS:
-			if (mPL2303type == 1)
-				mVendorWrite(0x0, 0x61, null, 0);
-			else
-				mVendorWrite(0x0, 0x41, null, 0);
-			setDTR(true);
-			setRTS(true);
-			mFlow = F;
-			Log.d(TAG, "RTS/CTS FlowControl enabled");
-			break;
-
-		case DTRDSR:
-			break;
-		case XONXOFF:
-			break;
-		}
-
 	}
 
 	/**
