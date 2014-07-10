@@ -1,5 +1,10 @@
 package com.nbg.file;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 import android.app.Notification;
 import android.app.Notification.Builder;
 import android.app.PendingIntent;
@@ -44,7 +49,7 @@ public class MonitorService extends Service implements INotify {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			client = new RTSPClient(url, dir, m, 180, this);
+			client = new RTSPClient(url, dir, m, 30, this);
 
 			Intent i = new Intent(this, MainActivity.class);
 			i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -79,6 +84,7 @@ public class MonitorService extends Service implements INotify {
 		super.onDestroy();
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void notify(String title, String text) {
 		builder.setContentTitle(title);
@@ -88,7 +94,7 @@ public class MonitorService extends Service implements INotify {
 
 	@Override
 	public void shutdown() {
-		android.os.Process.killProcess(android.os.Process.myPid());
 		System.exit(0);
+		android.os.Process.killProcess(android.os.Process.myPid());
 	}
 }
