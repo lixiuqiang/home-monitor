@@ -865,7 +865,7 @@ public class PL2303driver implements Runnable {
 				@Override
 				public void write(int oneByte) throws IOException {
 					synchronized (this) {
-						if (mConnected)
+						if (!mConnected)
 							throw new IOException("Connection closed");
 
 						// If FlowControl: Check DSR / CTS before write

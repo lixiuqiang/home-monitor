@@ -17,6 +17,8 @@ import com.monitor.ttl.driver.PL2303driver.Parity;
 import com.monitor.ttl.driver.PL2303driver.StopBits;
 
 public class MainActivity extends Activity {
+	
+	MailSender mailSender=new MailSender();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -26,8 +28,17 @@ public class MainActivity extends Activity {
 
 			@Override
 			public void onRI(boolean state) {
-				// TODO Auto-generated method stub
-
+				if(state){
+					System.out.println("1号位检测到有人离开");
+				}else{
+					System.out.println("1号位检测到有人闯入");					
+				}
+				try {
+					mailSender.sendMail("有人闯入", "有人闯入", "nibaogang@163.com" , "13920294304@139.com");
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 
 			@Override
@@ -56,8 +67,11 @@ public class MainActivity extends Activity {
 
 			@Override
 			public void onDCD(boolean state) {
-				// TODO Auto-generated method stub
-
+				if(state){
+					System.out.println("2号位检测到有人离开");
+				}else{
+					System.out.println("2号位检测到有人闯入");					
+				}
 			}
 
 			@Override
@@ -79,8 +93,30 @@ public class MainActivity extends Activity {
 							Thread.sleep(1000);
 							System.out.println("wait for connect");
 						}
-						driver.setup(BaudRate.B0, DataBits.D8, StopBits.S1,
-								Parity.NONE, FlowControl.OFF);
+						try{
+							driver.setup(BaudRate.B75, DataBits.D8, StopBits.S2,
+									Parity.ODD, FlowControl.OFF);
+						}catch(Exception e){
+							e.printStackTrace();
+						}
+						for (int i = 0; i < 3; i++) {							
+							try{								
+								driver.setRTS(true);
+								driver.setDTR(true);
+							}catch(Exception e){
+								e.printStackTrace();
+							}
+							System.out.println("rts true");
+							Thread.sleep(5000);
+							try{								
+								driver.setRTS(false);
+								driver.setDTR(false);
+							}catch(Exception e){
+								e.printStackTrace();
+							}							
+							System.out.println("rts false");
+							Thread.sleep(5000);
+						}
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
