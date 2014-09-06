@@ -6,5 +6,8 @@
     <string name="mb">MB</string>
     <string name="start">启动</string>
     <string name="end">停止</string>
+    <string name="on">开</string>
+    <string name="off">关</string>
+    <string name="length">1024</string>
 
 </resources>

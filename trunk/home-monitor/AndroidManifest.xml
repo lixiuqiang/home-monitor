@@ -7,13 +7,18 @@
         android:minSdkVersion="15"
         android:targetSdkVersion="18" />
 
+    <uses-feature
+        android:name="android.hardware.usb.host"
+        android:required="true" >
+    </uses-feature>
+
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" >
     </uses-permission>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" >
     </uses-permission>
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="false"
@@ -25,8 +30,10 @@
             android:label="@string/title_activity_main" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
             </intent-filter>
         </activity>
         <service
@@ -39,14 +46,21 @@
             android:enabled="true"
             android:process=":monitor2" >
         </service>
-        
+        <service
+            android:name="com.nbg.file.TTLService1"
+            android:enabled="true"
+            android:process=":ttl1" >
+        </service>
+        <service
+            android:name="com.nbg.file.TTLService2"
+            android:enabled="true"
+            android:process=":ttl2" >
+        </service>
         <receiver android:name="com.nbg.file.BootReceiver" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </receiver>
-
     </application>
-
 </manifest>
