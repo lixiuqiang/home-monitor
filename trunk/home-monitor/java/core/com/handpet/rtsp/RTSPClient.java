@@ -14,9 +14,11 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
@@ -25,13 +27,13 @@ import com.handpet.jlibrtp.Participant;
 import com.handpet.jlibrtp.RTPAppIntf;
 import com.handpet.jlibrtp.RTPSession;
 
-public class RTSPClient implements RTPAppIntf,Runnable {
+public class RTSPClient implements RTPAppIntf, Runnable {
 	private static final String VERSION = " RTSP/1.0\r\n";
 	private static final String RTSP_OK = "RTSP/1.0 200 OK";
 	private static final String RTSP_AUTH = "RTSP/1.0 401 Unauthorized";
 	private boolean tcp = true;
 	private byte[] receiveByte = new byte[102400];
-	private Socket socket=null;
+	private Socket socket = null;
 
 	private int client_port;
 
@@ -58,10 +60,11 @@ public class RTSPClient implements RTPAppIntf,Runnable {
 	private FileOutputStream fos;
 	private boolean start = false;
 	private long start_time;
+	private boolean login = false;
 
 	private String dirPath;
 	private File desc;
-	private boolean move;
+	// private boolean move;
 	private int size;
 	private long receive;
 	private long lost;
@@ -102,7 +105,7 @@ public class RTSPClient implements RTPAppIntf,Runnable {
 
 	public void shutdown() {
 		try {
-			if(socket!=null){
+			if (socket != null) {
 				socket.close();
 			}
 			if (rtpSession != null) {
@@ -116,14 +119,18 @@ public class RTSPClient implements RTPAppIntf,Runnable {
 					e.printStackTrace();
 				}
 			}
+			if (notify != null) {
+				notify.shutdown();
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
-		}		
+		}
 	}
 
 	@Override
 	public void run() {
 		try {
+			checkSize(dir + remote_ip, max);
 			if (!tcp) {
 				DatagramSocket rtpSocket = new DatagramSocket(client_port);
 				rtpSession = new RTPSession(rtpSocket);
@@ -171,21 +178,22 @@ public class RTSPClient implements RTPAppIntf,Runnable {
 					continue;
 				}
 				int length = dis.readShort();
-				if(length<0){
+				if (length < 0) {
 					continue;
 				}
 				byte[] header = null;
 				byte[] data = null;
-				
-				if(receive%100==0){					
-					System.out.println(remote_ip+" receive:"+receive+" length:"+length+" channel:"+channel);
-				}
-				if(length>12){
+
+				if (length > 12) {
 					header = new byte[12];
 					data = new byte[length - 12];
-				}else{
+				} else {
 					header = new byte[length];
 					data = new byte[0];
+				}
+				if (receive % 100 == 0) {
+					System.out.println(remote_ip + " receive:" + receive
+							+ " length:" + length + " channel:" + channel);
 				}
 				dis.readFully(header);
 				dis.readFully(data);
@@ -194,7 +202,7 @@ public class RTSPClient implements RTPAppIntf,Runnable {
 					receive++;
 					handlerData(data);
 				} else if (channel == 1) {
-//					System.out.println("length:" + length);
+					System.out.println("channel 1 length:" + length);
 				}
 				if (System.currentTimeMillis() - time > 30000) {
 					String send2 = doPlay();
@@ -211,30 +219,33 @@ public class RTSPClient implements RTPAppIntf,Runnable {
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();			
+			e.printStackTrace();
 			shutdown();
-			start();
 		} finally {
 			System.out.println("rtp end");
 		}
 	}
-	
-	public void start(){
+
+	public void start() {
 		new Thread(this).start();
 	}
 
 	public boolean checkTimeout() {
-		if(zhengli(dir)){
-			move=true;
-		}
+		// if(zhengli(dir)){
+		// move=true;
+		// }
 		long time = (System.currentTimeMillis() - start_time) / 1000;
 		System.out.println("ip:" + remote_ip + " time:" + time + " timeout:"
 				+ timeout);
-		return time > timeout;
+		if (login) {
+			return time > timeout;
+		} else {
+			return time > 120;
+		}
 	}
 
 	protected boolean zhengli(String path) {
-		boolean result=false;
+		boolean result = false;
 		File dir = new File(path);
 		if (dir.isDirectory()) {
 			for (File file : dir.listFiles()) {
@@ -249,7 +260,7 @@ public class RTSPClient implements RTPAppIntf,Runnable {
 					System.out.println(desc);
 					desc.getParentFile().mkdirs();
 					file.renameTo(desc);
-					result=true;
+					result = true;
 				}
 			}
 		}
@@ -275,6 +286,7 @@ public class RTSPClient implements RTPAppIntf,Runnable {
 				sysStatus = Status.setup;
 				sessionid = receive.substring(receive.indexOf("Session: ") + 9)
 						.replaceAll("\r\n", "");
+				login = true;
 				return doPlay();
 			case setup:
 				sysStatus = Status.play;
@@ -403,19 +415,22 @@ public class RTSPClient implements RTPAppIntf,Runnable {
 		}
 		if (fos != null) {
 			fos.close();
-			if(!move){
-				System.out.println("delete File");
-				desc.delete();
-				if(desc.getParentFile().listFiles()==null){
-					desc.getParentFile().delete();
-				}
-			}
+			// if(!move){
+			// System.out.println("delete File");
+			// desc.delete();
+			// if(desc.getParentFile().listFiles()==null){
+			// desc.getParentFile().delete();
+			// }
+			// }
+			fileList.add(0, new FileInfo(desc.getPath(), desc.length()));
 		}
-		dirPath = remote_ip
-				+ new SimpleDateFormat("/yyMMdd/HH/yyMMdd-HHmm", Locale.CHINA)
-						.format(new Date(time)) + "-" + offset + ".h264";
-		move=false;
 		size = checkSize(dir + remote_ip, max);
+
+		dirPath = remote_ip
+				+ new SimpleDateFormat("/yyMMddHH/yyMMdd-HHmm", Locale.CHINA)
+						.format(new Date(time)) + "-" + offset + ".h264";
+		// move=false;
+
 		desc = new File(dir + dirPath);
 		System.out.println("create file:" + desc.getPath() + " size:" + size);
 		desc.getParentFile().mkdirs();
@@ -430,13 +445,36 @@ public class RTSPClient implements RTPAppIntf,Runnable {
 	@Override
 	public void error(Throwable throwable) {
 		shutdown();
-		if(notify!=null){
+		if (notify != null) {
 			notify.shutdown();
 		}
 	}
 
-	public int checkSize(String path, long mb) {
-		return (int) (getFolderSize(new File(path), 0, mb) / 1048576);
+	public int checkSize(String path, long file_max) {
+		long time = System.currentTimeMillis();
+		if (fileList == null) {
+			fileList = new ArrayList<FileInfo>();
+			getFolderSize(new File(path));
+		}
+
+		long file_total = 0;
+		for (int j = 0; j < fileList.size(); j++) {
+			FileInfo fileInfo = fileList.get(j);
+			file_total += fileInfo.length;
+			if (file_total > file_max) {
+				boolean result = new File(fileInfo.path).delete();
+				System.out.println("delete:" + fileInfo.path + " result:"
+						+ result + " file_total:" + file_total + " file_max:"
+						+ file_max);
+				fileList.remove(j);
+				j--;
+			}
+		}
+		System.out.println("check size use time:"
+				+ (System.currentTimeMillis() - time) / 1000 + " fileList:"
+				+ fileList.size() + " file_total:" + file_total + " file_max:"
+				+ file_max);
+		return (int) file_total / 1048576;
 	}
 
 	public String getTitle() {
@@ -449,11 +487,23 @@ public class RTSPClient implements RTPAppIntf,Runnable {
 		return dirPath;
 	}
 
-	public static long getFolderSize(File dir, long size, final long max) {
-		if (!dir.isDirectory()) {
-			return 0;
+	private static List<FileInfo> fileList;
+
+	static class FileInfo {
+		private String path;
+		private long length;
+
+		FileInfo(String path, long length) {
+			this.path = path;
+			this.length = length;
 		}
-		File[] fileList = dir.listFiles();
+	}
+
+	public static void getFolderSize(File dir) {
+		if (!dir.isDirectory()) {
+			return;
+		}
+		File[] files = dir.listFiles();
 		Comparator<File> comparator = new Comparator<File>() {
 
 			@Override
@@ -461,21 +511,14 @@ public class RTSPClient implements RTPAppIntf,Runnable {
 				return -lhs.getName().compareTo(rhs.getName());
 			}
 		};
-		Arrays.sort(fileList, comparator);
-		for (int i = 0; i < fileList.length; i++) {
-			if (fileList[i].isDirectory()) {
-				size = getFolderSize(fileList[i], size, max);
+		Arrays.sort(files, comparator);
+		for (int i = 0; i < files.length; i++) {
+			if (files[i].isDirectory()) {
+				getFolderSize(files[i]);
 			} else {
-				size = size + fileList[i].length();
-			}
-			if (size > max) {
-				boolean result = fileList[i].delete();
-				System.out
-						.println("delete:" + fileList[i].getPath() + " result:"
-								+ result + " size:" + size + " max:" + max);
+				fileList.add(new FileInfo(files[i].getPath(), files[i].length()));
 			}
 		}
-		return size;
 	}
 
 	@Override
