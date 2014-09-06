@@ -11,102 +11,51 @@
         android:layout_alignParentRight="true"
         android:inputType="none" />
 
-    <Button
-        android:id="@+id/end_button2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/start_button2"
-        android:layout_alignBottom="@+id/start_button2"
-        android:layout_alignParentRight="true"
-        android:text="@string/end" />
-
-    <Button
-        android:id="@+id/start_button2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/urlText2"
-        android:layout_toLeftOf="@+id/end_button2"
-        android:text="@string/start" />
-
-    <CheckBox
-        android:id="@+id/checkBox1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignTop="@+id/urlText1"
-        android:checked="true" />
-
     <EditText
         android:id="@+id/urlText1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
         android:layout_below="@+id/dirText"
-        android:layout_toRightOf="@+id/checkBox1"
         android:ems="10"
         android:inputType="textUri" />
 
-    <CheckBox
-        android:id="@+id/checkBox2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/urlText2"
-        android:layout_toLeftOf="@+id/urlText1"
-        android:checked="true" />
-
     <EditText
-        android:id="@+id/urlText2"
+        android:id="@+id/mbText1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/urlText1"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/checkBox1"
-        android:layout_marginTop="55dp"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/urlText1"
         android:ems="10"
-        android:inputType="textUri" >
-
-        <requestFocus />
-    </EditText>
+        android:inputType="number"
+        android:text="@string/length" />
 
     <Button
-        android:id="@+id/start_button1"
+        android:id="@+id/monitor_button1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/start_button2"
-        android:layout_below="@+id/checkBox1"
-        android:text="@string/start" />
-
-    <Button
-        android:id="@+id/end_button1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/start_button1"
-        android:layout_alignBottom="@+id/start_button1"
-        android:layout_alignLeft="@+id/end_button2"
         android:layout_alignParentRight="true"
+        android:layout_below="@+id/urlText1"
         android:text="@string/end" />
 
     <EditText
         android:id="@+id/mbText2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/start_button2"
-        android:layout_alignBottom="@+id/start_button2"
         android:layout_alignParentLeft="true"
+        android:layout_below="@+id/urlText2"
         android:ems="10"
         android:inputType="number"
-        android:text="1024" />
+        android:text="@string/length" />
 
-    <EditText
-        android:id="@+id/mbText1"
+    <Button
+        android:id="@+id/monitor_button2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/start_button1"
-        android:layout_alignBottom="@+id/start_button1"
-        android:layout_alignParentLeft="true"
-        android:ems="10"
-        android:inputType="number"
-        android:text="1024" />
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/urlText2"
+        android:text="@string/end" />
 
     <TextView
         android:id="@+id/mbView1"
@@ -125,5 +74,48 @@
         android:layout_alignLeft="@+id/mbView1"
         android:layout_alignTop="@+id/mbText2"
         android:text="@string/mb" />
+
+    <EditText
+        android:id="@+id/urlText2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/monitor_button1"
+        android:ems="10"
+        android:inputType="textUri" />
+
+    <Button
+        android:id="@+id/ttl_button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/ttl_button1"
+        android:text="@string/start" />
+    <Button
+        android:id="@+id/ttl_button1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/monitor_button2"
+        android:text="@string/start" />
+
+    <Button
+        android:id="@+id/switch1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/ttl_button1"
+        android:layout_alignBottom="@+id/ttl_button1"
+        android:layout_toRightOf="@+id/ttl_button2"
+        android:text="@string/on" />
+
+    <Button
+        android:id="@+id/switch2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/ttl_button2"
+        android:layout_alignBottom="@+id/ttl_button2"
+        android:layout_toRightOf="@+id/ttl_button2"
+        android:text="@string/on" />
 
 </RelativeLayout>
