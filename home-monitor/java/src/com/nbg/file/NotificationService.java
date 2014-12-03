@@ -5,6 +5,7 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.util.Log;
 
 import com.handpet.rtsp.INotify;
 
@@ -23,6 +24,7 @@ public abstract class NotificationService extends Service implements INotify {
 	public void notify(String title, String text) {
 		builder.setContentTitle(title);
 		builder.setContentText(text);
+		Log.i("nbg", title+" "+text);
 		startForeground(notification_id, builder.getNotification());
 	}
 

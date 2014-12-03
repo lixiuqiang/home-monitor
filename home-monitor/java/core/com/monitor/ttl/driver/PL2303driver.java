@@ -171,6 +171,7 @@ public class PL2303driver implements Runnable {
 							.getParcelableExtra(UsbManager.EXTRA_DEVICE);
 					if(!device.getDeviceName().equals(currentDevice.getDeviceName())){
 						Log.d(TAG,"device not this");
+						return;
 					}
 					if ((intent.getBooleanExtra(
 							UsbManager.EXTRA_PERMISSION_GRANTED, false))
@@ -223,6 +224,7 @@ public class PL2303driver implements Runnable {
 							.getParcelableExtra(UsbManager.EXTRA_DEVICE);
 					if(!device.getDeviceName().equals(currentDevice.getDeviceName())){
 						Log.d(TAG,"device not this");
+						return;
 					}
 					if (device.getDeviceName().equals(mDevice.getDeviceName())) {
 						Log.d(TAG, "Device detached");

@@ -7,8 +7,8 @@ public class TTLService2 extends TTLService{
 	}
 
 	@Override
-	public String name() {
-		return "/dev/bus/usb/001/005";
+	public int index() {
+		return 1;
 	}
 
 }

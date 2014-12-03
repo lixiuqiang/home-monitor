@@ -8,6 +8,9 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -18,14 +21,16 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import android.util.Log;
+
 public class MailSender extends javax.mail.Authenticator{
     private String user;  
     private String password;  
-    private Session session;
-  
-    static {  
-//        Security.addProvider(new org.apache.harmony.xnet.provider.jsse.JSSEProvider());  
-    }  
+    private class Text{
+    	String subject;
+    	String body;
+    }
+    private ArrayBlockingQueue<Text> queue=new ArrayBlockingQueue<Text>(100);
   
     public MailSender() {  
         this.user = "nibaogang@163.com";  
@@ -41,29 +46,53 @@ public class MailSender extends javax.mail.Authenticator{
 //                "javax.net.ssl.SSLSocketFactory");  
 //        props.put("mail.smtp.socketFactory.fallback", "false");  
         props.setProperty("mail.smtp.quitwait", "true");  
-  
-        session = Session.getDefaultInstance(props, this);  
+
+        final Session session = Session.getDefaultInstance(props, this); 
+        new Thread() {
+			public void run() {
+				while (true) {
+					try {
+						Text text = queue.take();
+						Log.i("nbg", "take text:"+text);
+						if(text!=null){							
+							String day = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+									.format(new Date());
+							MimeMessage message = new MimeMessage(session);
+							DataHandler handler = new DataHandler(
+									new ByteArrayDataSource(text.body.getBytes(),
+											"text/plain"));
+							message.setSender(new InternetAddress(
+									"nibaogang@163.com"));
+							message.setSubject(text.subject + "  时间：" + day);
+							message.setDataHandler(handler);
+							message.setRecipient(Message.RecipientType.TO,
+									new InternetAddress("13920294304@139.com"));
+							Transport.send(message);
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}.start();
     }  
   
     protected PasswordAuthentication getPasswordAuthentication() {  
         return new PasswordAuthentication(user, password);  
     }  
   
-    public synchronized void sendMail(String subject, String body, 
-    String sender, String recipients) throws Exception {
-    	String day=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-        MimeMessage message = new MimeMessage(session);  
-        DataHandler handler = new DataHandler(new ByteArrayDataSource(body.getBytes(), "text/plain"));  
-        message.setSender(new InternetAddress(sender));  
-        message.setSubject(subject+"时间："+day);  
-        message.setDataHandler(handler);  
-        if (recipients.indexOf(',') > 0)  {
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipients));  
-        }else{  
-            message.setRecipient(Message.RecipientType.TO, new InternetAddress(recipients));  
-        }
-        Transport.send(message);  
-    }  
+	public void sendMail(String subject, String body) {
+		Text text=new Text();
+		if(subject==null){
+			subject="空";
+		}
+		if(body==null){
+			body="空";
+		}
+		text.subject=subject;
+		text.body=body;
+		queue.offer(text);
+	}
   
     public class ByteArrayDataSource implements DataSource {  
         private byte[] data;  
