@@ -46,29 +46,25 @@ public abstract class TTLService extends NotificationService {
 			driver = new PL2303driver(getApplicationContext(), callback);
 			List<UsbDevice> devices = driver.getDeviceList();
 			System.out.println("devices size:" + devices.size());
-			for (UsbDevice usbDevice : devices) {
-				System.out.println(usbDevice.getDeviceId());
-				System.out.println(usbDevice.getProductId());
-				System.out.println(usbDevice.getVendorId());
-				System.out.println(usbDevice.getDeviceName());
-				if(usbDevice.getDeviceName().equals(name())){
-					try {
-						driver.open(usbDevice);
-						String notify = "connected DeviceId:" + usbDevice.getDeviceId();
-						System.out.println(notify);
-						notify("ttl", notify);
-					} catch (PL2303Exception e) {
-						e.printStackTrace();
-					}
-				}
+			UsbDevice usbDevice=devices.get(index());
+			System.out.println(usbDevice.getDeviceId());
+			System.out.println(usbDevice.getProductId());
+			System.out.println(usbDevice.getVendorId());
+			System.out.println(usbDevice.getDeviceName());
+			try {
+				driver.open(usbDevice);
+				String notify = "connected DeviceId:" + usbDevice.getDeviceId();
+				System.out.println(notify);
+				notify("ttl", notify);
+			} catch (PL2303Exception e) {
+				e.printStackTrace();
 			}
-			
 		}
 	}
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		if (intent.hasExtra("ttl_switch")) {
+		if (intent!=null&&intent.hasExtra("ttl_switch")) {
 			final boolean value = intent.getBooleanExtra("ttl_switch", false);
 			if (driver != null) {
 				System.out.println("drive:" + driver.isConnected() + " value:"
@@ -110,5 +106,5 @@ public abstract class TTLService extends NotificationService {
 		return super.onStartCommand(intent, flags, startId);
 	}
 
-	public abstract String name();
+	public abstract int index();
 }

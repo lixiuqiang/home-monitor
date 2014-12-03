@@ -22,6 +22,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
+import android.os.Handler;
+import android.os.HandlerThread;
+
 import com.handpet.jlibrtp.DataFrame;
 import com.handpet.jlibrtp.Participant;
 import com.handpet.jlibrtp.RTPAppIntf;
@@ -68,6 +71,7 @@ public class RTSPClient implements RTPAppIntf, Runnable {
 	private int size;
 	private long receive;
 	private long lost;
+	private Handler handler;
 
 	private enum Status {
 		init, options, describe, setup, play
@@ -91,6 +95,9 @@ public class RTSPClient implements RTPAppIntf, Runnable {
 		this.remote_port = Integer.parseInt(address.substring(b + 1, c));
 		this.username = address.substring(7, d);
 		this.password = address.substring(d + 1, a);
+		HandlerThread handlerThread=new HandlerThread("refresh_file");
+		handlerThread.start();
+		handler=new Handler(handlerThread.getLooper());
 
 		UncaughtExceptionHandler handler = new UncaughtExceptionHandler() {
 
@@ -424,15 +431,22 @@ public class RTSPClient implements RTPAppIntf, Runnable {
 			// }
 			fileList.add(0, new FileInfo(desc.getPath(), desc.length()));
 		}
-		size = checkSize(dir + remote_ip, max);
 
+		handler.post(new Runnable() {
+			
+			@Override
+			public void run() {
+				size = checkSize(dir + remote_ip, max);
+				System.out.println("size:" + size);
+			}
+		});
 		dirPath = remote_ip
-				+ new SimpleDateFormat("/yyMMddHH/yyMMdd-HHmm", Locale.CHINA)
+				+ new SimpleDateFormat("/yyMMdd/HH/yyMMdd-HHmm", Locale.CHINA)
 						.format(new Date(time)) + "-" + offset + ".h264";
 		// move=false;
 
 		desc = new File(dir + dirPath);
-		System.out.println("create file:" + desc.getPath() + " size:" + size);
+		System.out.println("create file:" + desc.getPath());
 		desc.getParentFile().mkdirs();
 		fos = new FileOutputStream(desc);
 	}
@@ -462,10 +476,23 @@ public class RTSPClient implements RTPAppIntf, Runnable {
 			FileInfo fileInfo = fileList.get(j);
 			file_total += fileInfo.length;
 			if (file_total > file_max) {
-				boolean result = new File(fileInfo.path).delete();
+				File file=new File(fileInfo.path);
+				boolean result = file.delete();
+				File parent=file.getParentFile();
 				System.out.println("delete:" + fileInfo.path + " result:"
 						+ result + " file_total:" + file_total + " file_max:"
 						+ file_max);
+				if(parent!=null){
+					if(parent.listFiles()==null){
+						parent.delete();
+						System.out.println("delete:" + parent.getPath());
+					}
+					File parent2=parent.getParentFile();
+					if(parent2.listFiles()==null){
+						parent2.delete();
+						System.out.println("delete:" + parent2.getPath());
+					}
+				}
 				fileList.remove(j);
 				j--;
 			}
