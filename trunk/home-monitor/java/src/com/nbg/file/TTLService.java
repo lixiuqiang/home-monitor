@@ -8,7 +8,6 @@ import android.content.SharedPreferences;
 import android.hardware.usb.UsbDevice;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.os.IBinder;
 
 import com.monitor.ttl.driver.PL2303Exception;
 import com.monitor.ttl.driver.PL2303callback;
@@ -25,11 +24,6 @@ public abstract class TTLService extends NotificationService {
 
 	public TTLService(int notfication_id, String config_name) {
 		super(notfication_id, config_name);
-	}
-
-	@Override
-	public IBinder onBind(Intent intent) {
-		return null;
 	}
 
 	@Override

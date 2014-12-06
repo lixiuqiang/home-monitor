@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.os.Process;
 import android.util.Log;
@@ -31,11 +32,11 @@ public abstract class NotificationService extends Service implements INotify {
 		Log.i("nbg", title + " " + text);
 		startForeground(notification_id, builder.getNotification());
 	}
-	
+
 	@Override
 	public void notify(String title, String text, boolean sendEmail) {
 		notify(title, text);
-		if(sendEmail){
+		if (sendEmail) {
 			mailSender.sendMail(title, text);
 		}
 	}
@@ -49,6 +50,7 @@ public abstract class NotificationService extends Service implements INotify {
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		Log.i("nbg", "service "+getClass().getName()+" start");
 		Intent intent = new Intent(this, MainActivity.class);
 		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
 				| Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -68,5 +70,10 @@ public abstract class NotificationService extends Service implements INotify {
 				Process.killProcess(Process.myPid());
 			}
 		}, 1000);
+	}
+
+	@Override
+	public IBinder onBind(Intent arg0) {
+		return null;
 	}
 }

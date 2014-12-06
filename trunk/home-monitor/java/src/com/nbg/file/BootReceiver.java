@@ -13,6 +13,7 @@ public class BootReceiver extends BroadcastReceiver{
 		MainActivity.handler(true, context, MonitorService2.class);
 		MainActivity.handler(true, context, TTLService1.class);
 		MainActivity.handler(true, context, TTLService2.class);
+		MainActivity.handler(true, context, WebService.class);
 	}
 
 }

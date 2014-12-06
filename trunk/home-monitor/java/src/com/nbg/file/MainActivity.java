@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
-import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -76,13 +75,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		mbText2.setText(config_2.getString("mb", "40960"));
 		urlText2.setText(config_2.getString("url",
 				"rtsp://xiaoni:dugudao3721@192.168.168.8:8001/mpeg4"));
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		super.onCreateOptionsMenu(menu);
-		getMenuInflater().inflate(R.menu.activity_main, menu);
-		return true;
+		MainActivity.handler(true, getApplicationContext(), WebService.class);
 	}
 
 	@Override

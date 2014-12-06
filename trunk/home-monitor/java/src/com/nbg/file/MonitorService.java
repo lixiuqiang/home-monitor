@@ -3,7 +3,6 @@ package com.nbg.file;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.IBinder;
 
 import com.handpet.rtsp.RTSPClient;
 
@@ -12,11 +11,6 @@ public abstract class MonitorService extends NotificationService {
 
 	public MonitorService(int notfication_id, String config_name) {
 		super(notfication_id, config_name);
-	}
-
-	@Override
-	public IBinder onBind(Intent arg0) {
-		return null;
 	}
 
 	@Override
