@@ -46,7 +46,7 @@ public class MyPL2303callback implements PL2303callback {
 			builder.append("警报有人闯入，触发次数为");
 			for (String l : numMap.keySet()) {
 				int n = numMap.get(l);
-				builder.append("(").append(location).append("触发").append(n)
+				builder.append("(").append(l).append("触发").append(n)
 						.append("次)");
 			}
 			mailSender.sendMail(location + "有人闯入,间隔调整为" + jiange + "分钟",
