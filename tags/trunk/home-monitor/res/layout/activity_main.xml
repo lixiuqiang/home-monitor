@@ -1,0 +1,121 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <EditText
+        android:id="@+id/dirText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:inputType="none" />
+
+    <EditText
+        android:id="@+id/urlText1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/dirText"
+        android:ems="10"
+        android:inputType="textUri" />
+
+    <EditText
+        android:id="@+id/mbText1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/urlText1"
+        android:ems="10"
+        android:inputType="number"
+        android:text="@string/length" />
+
+    <Button
+        android:id="@+id/monitor_button1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/urlText1"
+        android:text="@string/end" />
+
+    <EditText
+        android:id="@+id/mbText2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/urlText2"
+        android:ems="10"
+        android:inputType="number"
+        android:text="@string/length" />
+
+    <Button
+        android:id="@+id/monitor_button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/urlText2"
+        android:text="@string/end" />
+
+    <TextView
+        android:id="@+id/mbView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/mbText1"
+        android:layout_alignBottom="@+id/mbText1"
+        android:layout_alignRight="@+id/mbText1"
+        android:layout_marginRight="12dp"
+        android:text="@string/mb" />
+
+    <TextView
+        android:id="@+id/mbView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/mbView1"
+        android:layout_alignTop="@+id/mbText2"
+        android:text="@string/mb" />
+
+    <EditText
+        android:id="@+id/urlText2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/monitor_button1"
+        android:ems="10"
+        android:inputType="textUri" />
+
+    <Button
+        android:id="@+id/ttl_button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/ttl_button1"
+        android:text="@string/start" />
+    <Button
+        android:id="@+id/ttl_button1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/monitor_button2"
+        android:text="@string/start" />
+
+    <Button
+        android:id="@+id/switch1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/ttl_button1"
+        android:layout_alignBottom="@+id/ttl_button1"
+        android:layout_toRightOf="@+id/ttl_button2"
+        android:text="@string/on" />
+
+    <Button
+        android:id="@+id/switch2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/ttl_button2"
+        android:layout_alignBottom="@+id/ttl_button2"
+        android:layout_toRightOf="@+id/ttl_button2"
+        android:text="@string/on" />
+
+</RelativeLayout>
