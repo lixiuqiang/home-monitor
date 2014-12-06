@@ -9,5 +9,6 @@
     <string name="on">开</string>
     <string name="off">关</string>
     <string name="length">1024</string>
-
+    <string name="device1">设备1</string>
+    <string name="device2">设备2</string>
 </resources>
