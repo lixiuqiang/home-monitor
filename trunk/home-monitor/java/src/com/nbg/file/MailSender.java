@@ -55,7 +55,7 @@ public class MailSender extends javax.mail.Authenticator{
 						Text text = queue.take();
 						Log.i("nbg", "take text:"+text);
 						if(text!=null){							
-							String day = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+							String time = new SimpleDateFormat("yyyy-MM-dd|HH:mm:ss")
 									.format(new Date());
 							MimeMessage message = new MimeMessage(session);
 							DataHandler handler = new DataHandler(
@@ -63,7 +63,7 @@ public class MailSender extends javax.mail.Authenticator{
 											"text/plain"));
 							message.setSender(new InternetAddress(
 									"nibaogang@163.com"));
-							message.setSubject(text.subject + "  时间：" + day);
+							message.setSubject(text.subject + "(" + time+")");
 							message.setDataHandler(handler);
 							message.setRecipient(Message.RecipientType.TO,
 									new InternetAddress("13920294304@139.com"));
