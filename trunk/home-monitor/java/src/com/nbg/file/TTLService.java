@@ -9,8 +9,6 @@ import android.hardware.usb.UsbDevice;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
-import android.os.Looper;
-import android.os.Process;
 
 import com.monitor.ttl.driver.PL2303Exception;
 import com.monitor.ttl.driver.PL2303callback;
@@ -106,18 +104,6 @@ public abstract class TTLService extends NotificationService {
 			}
 		}
 		return super.onStartCommand(intent, flags, startId);
-	}
-	
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-		new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-			
-			@Override
-			public void run() {
-				Process.killProcess(Process.myPid());				
-			}
-		}, 1000);
 	}
 
 	public abstract int index();

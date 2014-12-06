@@ -9,8 +9,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -21,9 +19,10 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import android.annotation.SuppressLint;
 import android.util.Log;
 
-public class MailSender extends javax.mail.Authenticator{
+@SuppressLint("SimpleDateFormat") public class MailSender extends javax.mail.Authenticator{
     private String user;  
     private String password;  
     private class Text{

@@ -7,7 +7,6 @@ import com.handpet.rtsp.INotify;
 import com.monitor.ttl.driver.PL2303callback;
 
 public class MyPL2303callback implements PL2303callback {
-	private MailSender mailSender = new MailSender();
 	private long time = 0;
 	private Map<String, Integer> numMap = new HashMap<String, Integer>();
 	private int jiange = 1;
@@ -34,11 +33,15 @@ public class MyPL2303callback implements PL2303callback {
 			return;
 		}
 		if (ago > (jiange * 2) * 60000) {
-			if (jiange > 1) {
-				jiange /= 2;
-			}
+			jiange /= 2;
 		} else {
 			jiange *= 2;
+		}
+		if (jiange < 1) {
+			jiange = 1;
+		}
+		if (jiange > 64) {
+			jiange = 64;
 		}
 		time = System.currentTimeMillis();
 		try {
@@ -49,8 +52,8 @@ public class MyPL2303callback implements PL2303callback {
 				builder.append("(").append(l).append("触发").append(n)
 						.append("次)");
 			}
-			mailSender.sendMail(location + "有人闯入,间隔调整为" + jiange + "分钟",
-					builder.toString());
+			notify.notify(location + "有人闯入,间隔调整为" + jiange + "分钟",
+					builder.toString(), true);
 			numMap.clear();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -64,29 +67,17 @@ public class MyPL2303callback implements PL2303callback {
 
 	@Override
 	public void onInitSuccess(String devicename) {
-		try {
-			mailSender.sendMail("设备" + devicename + "启动成功", devicename);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		notify.notify("设备" + devicename + "启动成功", devicename, true);
 	}
 
 	@Override
 	public void onInitFailed(String reason) {
-		try {
-			mailSender.sendMail("设备" + reason + "启动失败", reason);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		notify.notify("设备" + reason + "启动失败", reason, true);
 	}
 
 	@Override
 	public void onDeviceDetached(String devicename) {
-		try {
-			mailSender.sendMail("设备" + devicename + "断开", devicename);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		notify.notify("设备" + devicename + "断开", devicename, true);
 	}
 
 	@Override
