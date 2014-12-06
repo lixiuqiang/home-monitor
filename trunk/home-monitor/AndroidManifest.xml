@@ -21,21 +21,30 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
+        android:name="com.nbg.file.MainApplication"
         android:allowBackup="false"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
             android:name="com.nbg.file.MainActivity"
-            android:label="@string/title_activity_main" >
+            android:label="@string/title_activity_main"
+            android:process=":main" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name="com.nbg.file.WebService"
+            android:enabled="true"
+            android:process=":main" >
+        </service>
         <service
             android:name="com.nbg.file.MonitorService1"
             android:enabled="true"
@@ -56,11 +65,15 @@
             android:enabled="true"
             android:process=":ttl2" >
         </service>
-        <receiver android:name="com.nbg.file.BootReceiver" >
+
+        <receiver
+            android:name="com.nbg.file.BootReceiver"
+            android:process=":main" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </receiver>
     </application>
+
 </manifest>
