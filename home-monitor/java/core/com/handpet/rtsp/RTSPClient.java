@@ -607,6 +607,11 @@ public class RTSPClient implements RTPAppIntf, Runnable {
 					System.out.println("title:" + title);
 					System.out.println("text:" + text);
 				}
+
+				@Override
+				public void notify(String title, String text, boolean sendEmail) {
+					notify(title, text);
+				}
 			};
 			// RTSPClient client1 = new RTSPClient(
 			// "rtsp://xiaoni:dugudao3721@192.168.168.7:7001/mpeg4",
