@@ -69,11 +69,11 @@ public class MainActivity extends Activity implements OnClickListener {
 		ttl_switch2.setOnClickListener(this);
 
 		dirText.setText(config_1.getString("dir", "/mnt/sda1/HOME/"));
-		mbText1.setText(config_1.getString("mb", "1024"));
+		mbText1.setText(config_1.getString("mb", "81920"));
 		urlText1.setText(config_1.getString("url",
 				"rtsp://xiaoni:dugudao3721@192.168.168.7:7001/mpeg4"));
 
-		mbText2.setText(config_2.getString("mb", "1024"));
+		mbText2.setText(config_2.getString("mb", "40960"));
 		urlText2.setText(config_2.getString("url",
 				"rtsp://xiaoni:dugudao3721@192.168.168.8:8001/mpeg4"));
 	}
