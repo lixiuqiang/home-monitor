@@ -2,7 +2,6 @@ package com.nbg.file;
 
 import java.util.List;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.hardware.usb.UsbDevice;
@@ -29,8 +28,7 @@ public abstract class TTLService extends NotificationService {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		SharedPreferences config = getSharedPreferences(config_name,
-				Context.MODE_PRIVATE);
+		SharedPreferences config = getConfig();
 		boolean enable = config.getBoolean("enable", false);
 		if (enable) {
 			HandlerThread thread = new HandlerThread("thread");
@@ -48,6 +46,7 @@ public abstract class TTLService extends NotificationService {
 			try {
 				driver.open(usbDevice);
 				String notify = "connected DeviceId:" + usbDevice.getDeviceId();
+				getConfig().edit().putString("device", usbDevice.getDeviceName()).commit();
 				System.out.println(notify);
 				notify("ttl", notify);
 			} catch (PL2303Exception e) {

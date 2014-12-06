@@ -54,7 +54,7 @@ import android.util.Log;
 						Text text = queue.take();
 						Log.i("nbg", "take text:"+text);
 						if(text!=null){							
-							String time = new SimpleDateFormat("yyyy-MM-dd|HH:mm:ss")
+							String time = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss")
 									.format(new Date());
 							MimeMessage message = new MimeMessage(session);
 							DataHandler handler = new DataHandler(
