@@ -1,10 +1,16 @@
 package com.nbg.file;
 
-import android.app.Notification.Builder;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import android.annotation.SuppressLint;
 import android.app.Notification;
+import android.app.Notification.Builder;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -13,6 +19,7 @@ import android.util.Log;
 
 import com.handpet.rtsp.INotify;
 
+@SuppressLint("SimpleDateFormat")
 public abstract class NotificationService extends Service implements INotify {
 	private final MailSender mailSender = new MailSender();
 	private Builder builder;
@@ -24,12 +31,18 @@ public abstract class NotificationService extends Service implements INotify {
 		this.config_name = config_name;
 	}
 
+	protected SharedPreferences getConfig() {
+		return getSharedPreferences(this.config_name, 4);
+	}
+
 	@SuppressWarnings("deprecation")
 	@Override
 	public void notify(String title, String text) {
 		builder.setContentTitle(title);
 		builder.setContentText(text);
 		Log.i("nbg", title + " " + text);
+		DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		monitor("detail", format.format(new Date()) + " " + title + "\n" + text);
 		startForeground(notification_id, builder.getNotification());
 	}
 
@@ -42,6 +55,15 @@ public abstract class NotificationService extends Service implements INotify {
 	}
 
 	@Override
+	public void monitor(String key, String value) {
+		try {
+			getConfig().edit().putString("monitor_" + key, value).commit();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
 	public void shutdown() {
 		System.exit(0);
 		android.os.Process.killProcess(android.os.Process.myPid());
@@ -50,7 +72,7 @@ public abstract class NotificationService extends Service implements INotify {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		Log.i("nbg", "service "+getClass().getName()+" start");
+		Log.i("nbg", "service " + getClass().getName() + " start");
 		Intent intent = new Intent(this, MainActivity.class);
 		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
 				| Intent.FLAG_ACTIVITY_SINGLE_TOP);

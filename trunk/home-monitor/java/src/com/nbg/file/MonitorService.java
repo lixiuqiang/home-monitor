@@ -1,6 +1,5 @@
 package com.nbg.file;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 
@@ -16,8 +15,7 @@ public abstract class MonitorService extends NotificationService {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		SharedPreferences config = getSharedPreferences(config_name,
-				Context.MODE_PRIVATE);
+		SharedPreferences config = getConfig();
 		String dir = config.getString("dir", null);
 		boolean enable = config.getBoolean("enable", false);
 		if (enable) {

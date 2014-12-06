@@ -27,12 +27,10 @@ import org.apache.http.protocol.ResponseContent;
 import org.apache.http.protocol.ResponseDate;
 import org.apache.http.protocol.ResponseServer;
 
-import android.util.Log;
-
 public class WebService extends NotificationService {
 
 	public WebService() {
-		super(0, "web");
+		super(5, CONFIG_WEB);
 	}
 
 	@Override
@@ -47,16 +45,15 @@ public class WebService extends NotificationService {
 		}
 	}
 
-	static class RequestListenerThread extends Thread {
+	class RequestListenerThread extends Thread {
 
 		private final ServerSocket serversocket;
 		private final HttpParams params;
 		private final HttpService httpService;
 
 		public RequestListenerThread(int port) throws IOException {
-			Log.i("nbg", "listener start");
 			this.serversocket = new ServerSocket(port);
-			Log.i("nbg", "server socket start");
+			WebService.this.notify("WEB", "服务启动,端口:" + port);
 
 			// Set up the HTTP protocol processor
 			HttpProcessor httpproc = new ImmutableHttpProcessor(
@@ -77,7 +74,8 @@ public class WebService extends NotificationService {
 
 			// Set up request handlers
 			HttpRequestHandlerRegistry reqistry = new HttpRequestHandlerRegistry();
-			reqistry.register("/protocol", new ProtocolHandler()); // WebServiceHandler用来处理webservice请求。
+			reqistry.register("/protocol", new ProtocolHandler());
+			reqistry.register("/monitor", new MonitorHandler());
 
 			this.httpService = new HttpService(httpproc,
 					new DefaultConnectionReuseStrategy(),
@@ -89,15 +87,14 @@ public class WebService extends NotificationService {
 
 		@Override
 		public void run() {
-			System.out.println("Listening on port "
+			WebService.this.notify("WEB", "Listening on port "
 					+ this.serversocket.getLocalPort());
-			System.out.println("Thread.interrupted = " + Thread.interrupted());
 			while (!Thread.interrupted()) {
 				try {
 					// Set up HTTP connection
 					Socket socket = this.serversocket.accept();
 					DefaultHttpServerConnection conn = new DefaultHttpServerConnection();
-					System.out.println("Incoming connection from "
+					WebService.this.notify("WEB", "Incoming connection from "
 							+ socket.getInetAddress());
 					conn.bind(socket, this.params);
 
