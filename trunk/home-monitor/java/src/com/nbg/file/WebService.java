@@ -27,6 +27,8 @@ import org.apache.http.protocol.ResponseContent;
 import org.apache.http.protocol.ResponseDate;
 import org.apache.http.protocol.ResponseServer;
 
+import android.content.Intent;
+
 public class WebService extends NotificationService {
 
 	public WebService() {
@@ -43,6 +45,12 @@ public class WebService extends NotificationService {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		DevicesMonitor.getInstance().checkIP();
+		return super.onStartCommand(intent, flags, startId);
 	}
 
 	class RequestListenerThread extends Thread {

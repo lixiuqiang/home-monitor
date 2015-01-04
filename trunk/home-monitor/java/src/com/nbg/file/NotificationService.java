@@ -11,6 +11,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -31,8 +32,12 @@ public abstract class NotificationService extends Service implements INotify {
 		this.config_name = config_name;
 	}
 
-	protected SharedPreferences getConfig() {
+	protected SharedPreferences getMonitorConfig() {
 		return getSharedPreferences(this.config_name, 4);
+	}
+
+	protected SharedPreferences getConfig() {
+		return getSharedPreferences(INotify.CONFIG_BASE, 4);
 	}
 
 	@SuppressWarnings("deprecation")
@@ -57,7 +62,10 @@ public abstract class NotificationService extends Service implements INotify {
 	@Override
 	public void monitor(String key, String value) {
 		try {
-			getConfig().edit().putString("monitor_" + key, value).commit();
+			Editor editor = getMonitorConfig().edit();
+			editor.putString("monitor_" + key, value);
+			editor.putLong("monitor_time_" + key, System.currentTimeMillis());
+			editor.commit();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -65,8 +73,7 @@ public abstract class NotificationService extends Service implements INotify {
 
 	@Override
 	public void shutdown() {
-		System.exit(0);
-		android.os.Process.killProcess(android.os.Process.myPid());
+		stopSelf();
 	}
 
 	@Override
@@ -80,6 +87,14 @@ public abstract class NotificationService extends Service implements INotify {
 		builder = new Notification.Builder(this)
 				.setSmallIcon(R.drawable.ic_launcher).setTicker("NBG")
 				.setContentTitle("Monitor").setContentIntent(pi);
+		Editor editor = getMonitorConfig().edit();
+		editor.putLong("servie_start_time", System.currentTimeMillis());
+		editor.commit();
+	}
+
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		return super.onStartCommand(intent, flags, startId);
 	}
 
 	@Override

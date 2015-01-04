@@ -3,7 +3,6 @@ package com.nbg.file;
 import java.util.List;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.hardware.usb.UsbDevice;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -28,36 +27,33 @@ public abstract class TTLService extends NotificationService {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		SharedPreferences config = getConfig();
-		boolean enable = config.getBoolean("enable", false);
-		if (enable) {
-			HandlerThread thread = new HandlerThread("thread");
-			thread.start();
-			handler = new Handler(thread.getLooper());
-			PL2303callback callback = new MyPL2303callback(this);
-			driver = new PL2303driver(getApplicationContext(), callback);
-			List<UsbDevice> devices = driver.getDeviceList();
-			System.out.println("devices size:" + devices.size());
-			UsbDevice usbDevice=devices.get(index());
-			System.out.println(usbDevice.getDeviceId());
-			System.out.println(usbDevice.getProductId());
-			System.out.println(usbDevice.getVendorId());
-			System.out.println(usbDevice.getDeviceName());
-			try {
-				driver.open(usbDevice);
-				String notify = "connected DeviceId:" + usbDevice.getDeviceId();
-				getConfig().edit().putString("device", usbDevice.getDeviceName()).commit();
-				System.out.println(notify);
-				notify("ttl", notify);
-			} catch (PL2303Exception e) {
-				e.printStackTrace();
-			}
+		HandlerThread thread = new HandlerThread("thread");
+		thread.start();
+		handler = new Handler(thread.getLooper());
+		PL2303callback callback = new MyPL2303callback(this);
+		driver = new PL2303driver(getApplicationContext(), callback);
+		List<UsbDevice> devices = driver.getDeviceList();
+		System.out.println("devices size:" + devices.size());
+		UsbDevice usbDevice = devices.get(index());
+		System.out.println(usbDevice.getDeviceId());
+		System.out.println(usbDevice.getProductId());
+		System.out.println(usbDevice.getVendorId());
+		System.out.println(usbDevice.getDeviceName());
+		try {
+			driver.open(usbDevice);
+			String notify = "connected DeviceId:" + usbDevice.getDeviceId();
+			getMonitorConfig().edit().putString("device", usbDevice.getDeviceName())
+					.commit();
+			System.out.println(notify);
+			notify("ttl", notify);
+		} catch (PL2303Exception e) {
+			e.printStackTrace();
 		}
 	}
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		if (intent!=null&&intent.hasExtra("ttl_switch")) {
+		if (intent != null && intent.hasExtra("ttl_switch")) {
 			final boolean value = intent.getBooleanExtra("ttl_switch", false);
 			if (driver != null) {
 				System.out.println("drive:" + driver.isConnected() + " value:"
@@ -77,10 +73,10 @@ public abstract class TTLService extends NotificationService {
 										FlowControl.OFF);
 								driver.setRTS(value);
 								driver.setDTR(value);
-								if(value){
-									TTLService.this.notify("开关","动态开启");
-								}else{
-									TTLService.this.notify("开关","动态关闭");
+								if (value) {
+									TTLService.this.notify("开关", "动态开启");
+								} else {
+									TTLService.this.notify("开关", "动态关闭");
 								}
 								break;
 							} catch (PL2303Exception e) {

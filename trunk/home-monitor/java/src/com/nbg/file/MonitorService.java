@@ -17,27 +17,23 @@ public abstract class MonitorService extends NotificationService {
 		super.onCreate();
 		SharedPreferences config = getConfig();
 		String dir = config.getString("dir", null);
-		boolean enable = config.getBoolean("enable", false);
-		if (enable) {
-			String url = config.getString("url", null);
-			String mb = config.getString("mb", null);
-			int m = 10240;
-			try {
-				m = Integer.parseInt(mb);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			client = new RTSPClient(url, dir, m, 30, this);
-
-			notify("Monitor", "begin");
-
-			client.start();
+		String url = config.getString("url_" + index(), null);
+		String mb = config.getString("mb_" + index(), null);
+		int m = 10240;
+		try {
+			m = Integer.parseInt(mb);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
+		client = new RTSPClient(url, dir, m, 30, this);
+
+		notify("Monitor", "begin");
+
+		client.start();
 	}
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		System.out.println("===============onStartCommand==============");
 		if (client == null || client.checkTimeout()) {
 			shutdown();
 		} else {
@@ -54,4 +50,6 @@ public abstract class MonitorService extends NotificationService {
 		client.shutdown();
 		super.onDestroy();
 	}
+
+	public abstract int index();
 }

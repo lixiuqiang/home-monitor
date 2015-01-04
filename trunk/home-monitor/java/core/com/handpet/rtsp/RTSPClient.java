@@ -484,12 +484,14 @@ public class RTSPClient implements RTPAppIntf, Runnable {
 						+ result + " file_total:" + file_total + " file_max:"
 						+ file_max);
 				if (parent != null) {
-					if (parent.listFiles() == null) {
+					if (parent.listFiles() == null
+							|| parent.listFiles().length == 0) {
 						parent.delete();
 						System.out.println("delete:" + parent.getPath());
 					}
 					File parent2 = parent.getParentFile();
-					if (parent2.listFiles() == null) {
+					if (parent2.listFiles() == null
+							|| parent.listFiles().length == 0) {
 						parent2.delete();
 						System.out.println("delete:" + parent2.getPath());
 					}
@@ -533,6 +535,9 @@ public class RTSPClient implements RTPAppIntf, Runnable {
 			return;
 		}
 		File[] files = dir.listFiles();
+		if(files.length==0){
+			dir.delete();
+		}
 		Comparator<File> comparator = new Comparator<File>() {
 
 			@Override

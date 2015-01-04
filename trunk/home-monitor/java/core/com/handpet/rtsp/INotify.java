@@ -1,6 +1,7 @@
 package com.handpet.rtsp;
 
 public interface INotify {
+	String CONFIG_BASE = "config";
 	String CONFIG_WEB = "web";
 	String CONFIG_MONITOR_1 = "monitor_1";
 	String CONFIG_MONITOR_2 = "monitor_2";

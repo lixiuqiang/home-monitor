@@ -6,4 +6,8 @@ public class MonitorService1 extends MonitorService {
 		super(1, CONFIG_MONITOR_1);
 	}
 
+	@Override
+	public int index() {
+		return 1;
+	}
 }
