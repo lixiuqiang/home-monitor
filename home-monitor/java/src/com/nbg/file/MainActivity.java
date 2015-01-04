@@ -2,13 +2,8 @@ package com.nbg.file;
 
 import java.util.List;
 
-import com.handpet.rtsp.INotify;
-
 import android.app.Activity;
 import android.app.ActivityManager;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -18,6 +13,8 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import com.handpet.rtsp.INotify;
 
 public class MainActivity extends Activity implements OnClickListener {
 	private Button monitor_button1;
@@ -42,17 +39,17 @@ public class MainActivity extends Activity implements OnClickListener {
 		setContentView(R.layout.activity_main);
 		dirText = (EditText) findViewById(R.id.dirText);
 		monitor_button1 = (Button) findViewById(R.id.monitor_button1);
-		refreshButton(monitor_button1, INotify.CONFIG_MONITOR_1, false);
+		handler(monitor_button1, INotify.CONFIG_MONITOR_1, false, null);
 		monitor_button2 = (Button) findViewById(R.id.monitor_button2);
-		refreshButton(monitor_button2, INotify.CONFIG_MONITOR_2, false);
+		handler(monitor_button2, INotify.CONFIG_MONITOR_2, false, null);
 
 		ttl_button1 = (Button) findViewById(R.id.ttl_button1);
-		refreshButton(ttl_button1, INotify.CONFIG_TTL_1, false);
+		handler(ttl_button1, INotify.CONFIG_TTL_1, false, null);
 		ttl_button2 = (Button) findViewById(R.id.ttl_button2);
-		refreshButton(ttl_button2, INotify.CONFIG_TTL_2, false);
+		handler(ttl_button2, INotify.CONFIG_TTL_2, false, null);
 
 		web_button = (Button) findViewById(R.id.web_button);
-		refreshButton(web_button, INotify.CONFIG_WEB, false);
+		handler(web_button, INotify.CONFIG_WEB, false, null);
 
 		ttl_switch1 = (Button) findViewById(R.id.switch1);
 		ttl_switch2 = (Button) findViewById(R.id.switch2);
@@ -71,22 +68,21 @@ public class MainActivity extends Activity implements OnClickListener {
 		ttl_switch2.setOnClickListener(this);
 		web_button.setOnClickListener(this);
 
+		SharedPreferences config = getSharedPreferences(INotify.CONFIG_BASE);
+		dirText.setText(config.getString("dir", "/mnt/sda1/HOME/"));
+		mbText1.setText(config.getString("mb_1", "81920"));
+		urlText1.setText(config.getString("url_1",
+				"rtsp://xiaoni:dugudao3721@192.168.168.7:7001/mpeg4"));
+		mbText2.setText(config.getString("mb_2", "40960"));
+		urlText2.setText(config.getString("url_2",
+				"rtsp://xiaoni:dugudao3721@192.168.168.8:8001/mpeg4"));
+
 		SharedPreferences ttl_1 = getSharedPreferences(INotify.CONFIG_TTL_1);
 		device1.setText(ttl_1.getString("device", null));
 
 		SharedPreferences ttl_2 = getSharedPreferences(INotify.CONFIG_TTL_2);
 		device2.setText(ttl_2.getString("device", null));
 
-		SharedPreferences monitor_1 = getSharedPreferences(INotify.CONFIG_MONITOR_1);
-		dirText.setText(monitor_1.getString("dir", "/mnt/sda1/HOME/"));
-		mbText1.setText(monitor_1.getString("mb", "81920"));
-		urlText1.setText(monitor_1.getString("url",
-				"rtsp://xiaoni:dugudao3721@192.168.168.7:7001/mpeg4"));
-
-		SharedPreferences monitor_2 = getSharedPreferences(INotify.CONFIG_MONITOR_2);
-		mbText2.setText(monitor_2.getString("mb", "40960"));
-		urlText2.setText(monitor_2.getString("url",
-				"rtsp://xiaoni:dugudao3721@192.168.168.8:8001/mpeg4"));
 	}
 
 	private SharedPreferences getSharedPreferences(String config_name) {
@@ -96,33 +92,31 @@ public class MainActivity extends Activity implements OnClickListener {
 	@Override
 	public void onClick(View v) {
 		if (v == monitor_button1) {
-			Editor editor = getSharedPreferences(INotify.CONFIG_MONITOR_1)
-					.edit();
+			Editor editor = getSharedPreferences(INotify.CONFIG_BASE).edit();
 			editor.putString("dir", dirText.getText().toString());
-			editor.putString("url", urlText1.getText().toString());
-			editor.putString("mb", mbText1.getText().toString());
+			editor.putString("url_1", urlText1.getText().toString());
+			editor.putString("mb_1", mbText1.getText().toString());
 			editor.commit();
-			handler(monitor_button1, INotify.CONFIG_MONITOR_1,
+			handler(monitor_button1, INotify.CONFIG_MONITOR_1, true,
 					MonitorService1.class);
 		} else if (v == monitor_button2) {
-			Editor editor = getSharedPreferences(INotify.CONFIG_MONITOR_2)
-					.edit();
+			Editor editor = getSharedPreferences(INotify.CONFIG_BASE).edit();
 			editor.putString("dir", dirText.getText().toString());
-			editor.putString("url", urlText2.getText().toString());
-			editor.putString("mb", mbText2.getText().toString());
+			editor.putString("url_2", urlText2.getText().toString());
+			editor.putString("mb_2", mbText2.getText().toString());
 			editor.commit();
-			handler(monitor_button2, INotify.CONFIG_MONITOR_2,
+			handler(monitor_button2, INotify.CONFIG_MONITOR_2, true,
 					MonitorService2.class);
 		} else if (v == ttl_button1) {
 			SharedPreferences ttl_1 = getSharedPreferences(INotify.CONFIG_TTL_1);
 			device1.setText(ttl_1.getString("device", null));
-			handler(ttl_button1, INotify.CONFIG_TTL_1, TTLService1.class);
+			handler(ttl_button1, INotify.CONFIG_TTL_1, true, TTLService1.class);
 		} else if (v == ttl_button2) {
 			SharedPreferences ttl_2 = getSharedPreferences(INotify.CONFIG_TTL_2);
 			device2.setText(ttl_2.getString("device", null));
-			handler(ttl_button2, INotify.CONFIG_TTL_2, TTLService2.class);
+			handler(ttl_button2, INotify.CONFIG_TTL_2, true, TTLService2.class);
 		} else if (v == web_button) {
-			handler(web_button, INotify.CONFIG_WEB, WebService.class);
+			handler(web_button, INotify.CONFIG_WEB, true, WebService.class);
 		} else if (v == ttl_switch1) {
 			SharedPreferences ttl_1 = getSharedPreferences(INotify.CONFIG_TTL_1);
 			boolean value = !ttl_1.getBoolean("switch", false);
@@ -156,45 +150,24 @@ public class MainActivity extends Activity implements OnClickListener {
 		}
 	}
 
-	public void handler(Button button, String config_name, Class<?> c) {
-		boolean enable = refreshButton(button, config_name, true);
-		handler(enable, getApplicationContext(), c);
-	}
-
-	public static void handler(boolean enable, Context context, Class<?> c) {
-		Intent serviceIntent = new Intent(context, c);
-		PendingIntent mAlarmSender = PendingIntent.getService(context, 0,
-				serviceIntent, 0);
-		AlarmManager am = (AlarmManager) context
-				.getSystemService(Activity.ALARM_SERVICE);
-		if (enable) {
-			context.startService(serviceIntent);
-			int round = 10 * 1000;
-			am.cancel(mAlarmSender);
-			am.setRepeating(AlarmManager.RTC, System.currentTimeMillis()
-					+ round, round, mAlarmSender);
-		} else {
-			context.stopService(serviceIntent);
-			am.cancel(mAlarmSender);
-		}
-	}
-
-	private boolean refreshButton(Button button, String config_name,
-			boolean click) {
-		SharedPreferences preference = getSharedPreferences(config_name);
-		boolean enable = preference.getBoolean("enable", false);
+	public void handler(Button button, String config_name, boolean click,
+			Class<?> c) {
+		SharedPreferences preference = getSharedPreferences(INotify.CONFIG_BASE);
+		boolean enable = preference.getBoolean(config_name, false);
 		if (click) {
 			enable = !enable;
 			Editor editor = preference.edit();
-			editor.putBoolean("enable", enable);
+			editor.putBoolean(config_name, enable);
 			editor.commit();
+			System.out.println("====commit enable:" + enable + "====");
+			BootReceiver.handler(enable, getApplicationContext(), c);
 		}
 		if (enable) {
 			button.setText(R.string.end);
 		} else {
 			button.setText(R.string.start);
 		}
-		return enable;
+
 	}
 
 	public boolean isServiceRun() {

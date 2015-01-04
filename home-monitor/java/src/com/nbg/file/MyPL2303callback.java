@@ -35,26 +35,32 @@ public class MyPL2303callback implements PL2303callback {
 			builder.append("撤防");
 		}
 		builder.append("，间隔").append(jiange);
-		builder.append("分钟，触发次数为");
+		builder.append("分钟");
+		int sum = -1;
 		for (String l : numMap.keySet()) {
 			int n = numMap.get(l);
-			builder.append("(").append(l).append("触发").append(n).append("次)");
+			builder.append("(").append(l).append(n).append("次)");
+			sum += n;
 		}
 		String detail = null;
 		if (state) {
-			detail = location + "检测到有人离开";
+			detail = location + "离开警告";
 		} else {
-			detail = location + "检测到有人闯入";
+			detail = location + "闯入警告";
 		}
 		notify.notify(detail, builder.toString());
-		long ago = System.currentTimeMillis() - time;
-		if (ago < jiange * 60000) {
+		long ago = (System.currentTimeMillis() - time) / 60000;
+		if (ago < jiange) {
 			return;
-		}
-		if (ago > (jiange * 2) * 60000) {
-			jiange /= 2;
 		} else {
-			jiange *= 2;
+			if (sum > jiange * 2) {
+				jiange *= 2;
+			} else if (sum > jiange) {
+			} else if (sum > 0) {
+				jiange /= 2;
+			} else {
+				jiange = 1;
+			}
 		}
 		if (jiange < 1) {
 			jiange = 1;
@@ -64,7 +70,7 @@ public class MyPL2303callback implements PL2303callback {
 		}
 		time = System.currentTimeMillis();
 		try {
-			notify.notify(detail + ",间隔调整为" + jiange + "分钟",
+			notify.notify(detail + ",间隔" + jiange + "分钟",
 					builder.toString(), sendMail);
 			numMap.clear();
 		} catch (Exception e) {
