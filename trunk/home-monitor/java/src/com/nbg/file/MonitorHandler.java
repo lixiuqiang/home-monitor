@@ -38,10 +38,8 @@ public class MonitorHandler implements HttpRequestHandler {
 		if (method.equals("GET")) {
 			response.setStatusCode(HttpStatus.SC_OK);
 			StringBuilder monitor = new StringBuilder();
-			monitor.append("服务状态：\n");
-			boolean s = handlerService(monitor);
-			monitor.append("\n\n设备状态：\n");
 			handlerDevices(monitor, params.get("scan") != null);
+			boolean s = handlerService(monitor);
 			monitor.append("\n\n视频监控状态：\n");
 			boolean m1 = handlerPerference(INotify.CONFIG_MONITOR_1, monitor, 2);
 			boolean m2 = handlerPerference(INotify.CONFIG_MONITOR_2, monitor, 2);
@@ -51,9 +49,9 @@ public class MonitorHandler implements HttpRequestHandler {
 			boolean t2 = handlerPerference(INotify.CONFIG_TTL_2, monitor,
 					72 * 60);
 			if (s && m1 && m2 && t1 && t2) {
-				monitor.insert(0, "倪宝刚家的监控状态：监控正常\n\n");
+				monitor.insert(0, "监控状态：监控正常\n");
 			} else {
-				monitor.insert(0, "倪宝刚家的监控状态：监控异常\n\n");
+				monitor.insert(0, "监控状态：监控异常\n");
 			}
 			StringEntity entity = new StringEntity(monitor.toString(), "utf-8");
 			response.setEntity(entity);
@@ -65,6 +63,7 @@ public class MonitorHandler implements HttpRequestHandler {
 
 	@SuppressLint("SimpleDateFormat")
 	private boolean handlerService(StringBuilder monitor) {
+		monitor.append("\n\n服务状态：\n");
 		ActivityManager mActivityManager = (ActivityManager) MainApplication
 				.getContext().getSystemService(Context.ACTIVITY_SERVICE);
 
@@ -87,9 +86,7 @@ public class MonitorHandler implements HttpRequestHandler {
 			long activeSince = runServiceInfo.activeSince;
 			activeSince = System.currentTimeMillis()
 					- SystemClock.elapsedRealtime() + activeSince;
-			Date d = new Date(activeSince);
-			DateFormat format2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			String time = format2.format(d);
+			String time = formatTime(activeSince);
 
 			// 获得该Service的组件信息 可能是pkgname/servicename
 			ComponentName serviceCMP = runServiceInfo.service;
@@ -124,27 +121,37 @@ public class MonitorHandler implements HttpRequestHandler {
 		long monitor_ago = System.currentTimeMillis() - time;
 
 		long start_time = config.getLong("servie_start_time", 0);
-		long service_ago = System.currentTimeMillis() - start_time;
 		monitor.append("\n").append(config_name);
 		if (enable) {
 			monitor.append("(启动)");
-			monitor.append(formatTime(service_ago));
+			monitor.append(formatTimeAgo(start_time));
 			monitor.append("  (刷新)");
-			monitor.append(formatTime(monitor_ago)).append("\n");
+			monitor.append(formatTimeAgo(monitor_ago)).append("\n");
 			if (detail != null) {
 				monitor.append(detail).append("\n");
 			}
 			return timeout_minute * 60000 >= monitor_ago;
 		} else {
 			monitor.append("(停止)");
-			monitor.append(formatTime(service_ago));
+			monitor.append(formatTimeAgo(start_time));
 			monitor.append("  (刷新)");
-			monitor.append(formatTime(monitor_ago)).append("\n");
+			monitor.append(formatTimeAgo(monitor_ago)).append("\n");
 			return true;
 		}
 	}
 
+	@SuppressLint("SimpleDateFormat")
 	public static String formatTime(long time) {
+		if (time == 0) {
+			return "未知";
+		}
+		Date d = new Date(time);
+		DateFormat format2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		return format2.format(d);
+	}
+
+	public static String formatTimeAgo(long time) {
+		time = System.currentTimeMillis() - time;
 		StringBuilder builder = new StringBuilder();
 		long second = time / 1000;
 		long minute = second / 60;
