@@ -21,13 +21,13 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
-        android:name="com.nbg.file.MainApplication"
+        android:name="com.nbg.monitor.MainApplication"
         android:allowBackup="false"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="com.nbg.file.MainActivity"
+            android:name="com.nbg.monitor.MainActivity"
             android:label="@string/title_activity_main"
             android:process=":main" >
             <intent-filter>
@@ -41,36 +41,37 @@
         </activity>
 
         <service
-            android:name="com.nbg.file.WebService"
+            android:name="com.nbg.web.WebService"
             android:enabled="true"
             android:process=":main" >
         </service>
         <service
-            android:name="com.nbg.file.MonitorService1"
+            android:name="com.nbg.monitor.MonitorService1"
             android:enabled="true"
             android:process=":monitor1" >
         </service>
         <service
-            android:name="com.nbg.file.MonitorService2"
+            android:name="com.nbg.monitor.MonitorService2"
             android:enabled="true"
             android:process=":monitor2" >
         </service>
         <service
-            android:name="com.nbg.file.TTLService1"
+            android:name="com.nbg.ttl.TTLService1"
             android:enabled="true"
             android:process=":ttl1" >
         </service>
         <service
-            android:name="com.nbg.file.TTLService2"
+            android:name="com.com.nbg.ttl.TTLService2"
             android:enabled="true"
             android:process=":ttl2" >
         </service>
 
         <receiver
-            android:name="com.nbg.file.BootReceiver"
+            android:name="com.nbg.monitor.BootReceiver"
             android:process=":main" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </receiver>
